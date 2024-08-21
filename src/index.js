@@ -13,35 +13,80 @@ apm.start({
 const app = express();
 const port = 3000;
 
-app.get('/', async (req, res) => {
-    await client.index({
+app.use(express.json());
+
+app.post('/create', async (req, res) => {
+    const { 
+        titulo,
+        conteudo,
+        media,
+        cor,
+        favorito,
+     } = req.body;
+    console.log('oi')
+    const sucess = await client.index({
         index: 'my-index',
-        document: {
-            title: 'My Document',
-            body: 'This is the content of the document',
+        
+        body: {
+            title: titulo,
+            body: conteudo,
+            media: media,
+            color: cor,
+            favorite: favorito,
             timestamp: new Date()
         }
     });
-    res.send('Holla');
+
+    console.log(sucess)
+    res.send('ok')
 });
 
 
-app.get('/test', async (req, res) => {
+app.get('/documents', async (req, res) => {
     try {
         const result = await client.search({
             index: 'my-index',
-            body: { // O corpo da requisição vai aqui
+            body: {
                 query: {
-                    match: { hello: 'world' }
+                    match_all: {} // Busca todos os documentos no índice
                 }
-            }
+            },
+            size: 1000 // Limite o número de documentos retornados (ajuste conforme necessário)
         });
-        res.send(result.hits.hits);
+
+        if (result.hits.hits.length > 0) {
+            const documents = result.hits.hits.map(hit => hit._source); // Extrai o conteúdo dos documentos
+            res.json(documents); // Retorna os documentos encontrados como JSON
+        } else {
+            res.send('Nenhum documento encontrado');
+        }
     } catch (error) {
-        console.error('Erro ao buscar no Elasticsearch:', error);
-        res.status(500).send('Erro ao buscar no Elasticsearch');
+        console.error('Erro ao buscar os documentos:', error);
+        res.status(500).send('Erro ao buscar os documentos');
     }
 });
+
+app.delete('/document/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const result = await client.delete({
+            index: 'my-index',
+            id: id
+        });
+
+        if (result.result === 'deleted') {
+            res.send(`Documento com ID ${id} foi deletado com sucesso`);
+        } else {
+            res.status(404).send(`Documento com ID ${id} não encontrado`);
+        }
+    } catch (error) {
+        console.error('Erro ao deletar o documento:', error);
+        res.status(500).send('Erro ao deletar o documento');
+    }
+});
+
+
 
 
 app.listen(port, () => {
