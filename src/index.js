@@ -1,7 +1,7 @@
 import express from 'express'
 import { client } from './services/connectElastic.js';
 import apm from 'elastic-apm-node';
-
+import cors from 'cors';
 
 apm.start({
     serviceName: 'my-service-name',
@@ -11,6 +11,10 @@ apm.start({
   })
 
 const app = express();
+app.use(cors());
+
+app.options('*', cors());
+
 const port = 3000;
 
 app.use(express.json());
