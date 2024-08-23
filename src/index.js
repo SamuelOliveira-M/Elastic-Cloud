@@ -46,7 +46,38 @@ app.post('/create', async (req, res) => {
 });
 
 
-app.get('/documents', async (req, res) => {
+app.get('/documents/:titulo', async (req, res) => {
+    
+    const titulo = req.params
+
+    if(query){
+        try {
+            const result = await client.search({
+                index: 'my-index',
+                body: {
+                    query: {
+                        match: {
+                            title: {
+                                query: titulo, // Substitua pelo termo de pesquisa desejado
+                                fuzziness: "AUTO" // Permite buscas aproximadas
+                            }
+                        }
+                    }
+                },
+                size: 1000 // Limite o número de documentos retornados (ajuste conforme necessário)
+            });
+        
+            if (result.hits.hits.length > 0) {
+                const documents = result.hits.hits.map(hit => hit._source); // Extrai o conteúdo dos documentos
+                res.json(documents); // Retorna os documentos encontrados como JSON
+            } else {
+                res.send('Nenhum documento encontrado');
+            }
+        } catch (error) {
+            console.error('Erro ao buscar os documentos:', error);
+            res.status(500).send('Erro ao buscar os documentos');
+        }
+    }
     try {
         const result = await client.search({
             index: 'my-index',
