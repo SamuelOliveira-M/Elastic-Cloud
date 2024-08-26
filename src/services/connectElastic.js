@@ -14,29 +14,3 @@ export const client = new Client({
       }
   }
 });
-
-
-//  const client = new Client({
-//   cloud: {
-//     id: 'f20b625e7e6142fdab5b08af2c59cd91:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJDczOTNjNTE3MjFhZDQ5YmI4NmE4MGY5ZThmYjJmOWUzJDNkNDg2NmMxMDc2NzRkZjVhODJkMzRhYTZlZTdmZGVm'
-//   },
-//   auth: {
-//     username: 'elastic',
-//     password: 'Som@201309'
-//   }
-// })
-
-
-// const { Client } = require('@elastic/elasticsearch')
-// const client = new Client({
-//   cloud: { id: '<cloud-id>' },
-//   auth: { apiKey: 'base64EncodedKey' }
-// })
-
-// {
-//   "id": "3fwtbJEBTm6HSBj7SiCa",
-//   "name": "connect",
-//   "api_key": "WaI6pVjQRAyydKXBAeP9Ig",
-//   "encoded": "M2Z3dGJKRUJUbTZIU0JqN1NpQ2E6V2FJNnBWalFSQXl5ZEtYQkFlUDlJZw==",
-//   "beats_logstash_format": "3fwtbJEBTm6HSBj7SiCa:WaI6pVjQRAyydKXBAeP9Ig"
-// }

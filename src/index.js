@@ -20,17 +20,18 @@ const port = 3000;
 app.use(express.json());
 
 app.post('/create', async (req, res) => {
-    const { 
+    const {
+        id, 
         titulo,
         conteudo,
         media,
         cor,
         favorito,
      } = req.body;
-    console.log('oi')
+    
     const sucess = await client.index({
         index: 'my-index',
-        
+        id:id,
         body: {
             title: titulo,
             body: conteudo,
@@ -46,19 +47,20 @@ app.post('/create', async (req, res) => {
 });
 
 
-app.get('/documents/:titulo', async (req, res) => {
+app.get('/documents/:titulo?', async (req, res) => {
     
-    const titulo = req.params
-
-    if(query){
-        try {
+    const {titulo} = req.params;
+    console.log(titulo);
+    
+    try {
+        if (titulo) {
             const result = await client.search({
                 index: 'my-index',
                 body: {
                     query: {
                         match: {
                             title: {
-                                query: titulo, // Substitua pelo termo de pesquisa desejado
+                                query: titulo,
                                 fuzziness: "AUTO" // Permite buscas aproximadas
                             }
                         }
@@ -68,32 +70,34 @@ app.get('/documents/:titulo', async (req, res) => {
             });
         
             if (result.hits.hits.length > 0) {
-                const documents = result.hits.hits.map(hit => hit._source); // Extrai o conteúdo dos documentos
+                const documents = result.hits.hits.map(hit => ({
+                    id: hit._id, // Inclui o ID do documento
+                    ...hit._source // Inclui o conteúdo do documento
+                }));
                 res.json(documents); // Retorna os documentos encontrados como JSON
             } else {
                 res.send('Nenhum documento encontrado');
             }
-        } catch (error) {
-            console.error('Erro ao buscar os documentos:', error);
-            res.status(500).send('Erro ao buscar os documentos');
-        }
-    }
-    try {
-        const result = await client.search({
-            index: 'my-index',
-            body: {
-                query: {
-                    match_all: {} // Busca todos os documentos no índice
-                }
-            },
-            size: 1000 // Limite o número de documentos retornados (ajuste conforme necessário)
-        });
-
-        if (result.hits.hits.length > 0) {
-            const documents = result.hits.hits.map(hit => hit._source); // Extrai o conteúdo dos documentos
-            res.json(documents); // Retorna os documentos encontrados como JSON
         } else {
-            res.send('Nenhum documento encontrado');
+            const result = await client.search({
+                index: 'my-index',
+                body: {
+                    query: {
+                        match_all: {} // Busca todos os documentos no índice
+                    }
+                },
+                size: 1000 // Limite o número de documentos retornados (ajuste conforme necessário)
+            });
+
+            if (result.hits.hits.length > 0) {
+                const documents = result.hits.hits.map(hit => ({
+                    id: hit._id, // Inclui o ID do documento
+                    ...hit._source // Inclui o conteúdo do documento
+                }));
+                res.json(documents); // Retorna os documentos encontrados como JSON
+            } else {
+                res.send('Nenhum documento encontrado');
+            }
         }
     } catch (error) {
         console.error('Erro ao buscar os documentos:', error);
@@ -101,26 +105,24 @@ app.get('/documents/:titulo', async (req, res) => {
     }
 });
 
+
 app.delete('/document/:id', async (req, res) => {
     const { id } = req.params;
-
+  
     try {
-        const result = await client.delete({
-            index: 'my-index',
-            id: id
-        });
-
-        if (result.result === 'deleted') {
-            res.send(`Documento com ID ${id} foi deletado com sucesso`);
-        } else {
-            res.status(404).send(`Documento com ID ${id} não encontrado`);
-        }
+      const response = await client.delete({
+        index: 'my-index', // Certifique-se de substituir pelo nome correto do índice
+        id: id,
+      });
+  
+      console.log('Documento deletado:', response);
+      res.send('Documento deletado com sucesso');
     } catch (error) {
-        console.error('Erro ao deletar o documento:', error);
-        res.status(500).send('Erro ao deletar o documento');
+      console.error('Erro ao deletar o documento:', error);
+      res.status(500).send('Erro ao deletar o documento');
     }
 });
-
+  
 
 
 
