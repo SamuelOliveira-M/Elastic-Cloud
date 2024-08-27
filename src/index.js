@@ -114,7 +114,7 @@ app.delete('/document/:id', async (req, res) => {
         index: 'my-index', // Certifique-se de substituir pelo nome correto do índice
         id: id,
       });
-  
+      
       console.log('Documento deletado:', response);
       res.send('Documento deletado com sucesso');
     } catch (error) {
@@ -123,7 +123,48 @@ app.delete('/document/:id', async (req, res) => {
     }
 });
   
-
+app.put('/update/:id', async (req, res) => {
+    const { id } = req.params;
+    const {
+      titulo,
+      conteudo,
+      media,
+      cor,
+      favorito,
+    } = req.body;
+  
+    try {
+      const { _source: existingDocument } = await client.get({
+        index: 'my-index',
+        id: id
+      });
+  
+      const updatedFields = {
+        title: titulo || existingDocument.title,
+        body: conteudo || existingDocument.body,
+        media: media || existingDocument.media,
+        color: cor || existingDocument.color,
+        favorite: favorito !== undefined ? favorito : existingDocument.favorite,
+        timestamp: existingDocument.timestamp 
+      };
+  
+      const response = await client.update({
+        index: 'my-index',
+        id: id,
+        body: {
+          doc: updatedFields
+        }
+      });
+     
+      if(response.result === "updated"){
+        res.send('Documento atualizado com sucesso');
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar o documento:', error);
+      res.status(500).send('Erro ao atualizar o documento');
+    }
+  });
+  
 
 
 app.listen(port, () => {
