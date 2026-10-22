@@ -1,16 +1,8 @@
 import { Client } from '@elastic/elasticsearch';
 
-
-export const client = new Client({
-  node: 'https://7393c51721ad49bb86a80f9e8fb2f9e3.us-central1.gcp.cloud.es.io:443',
-  auth: {
-    apiKey:
-      {
-        "id": "q_wWcZEBTm6HSBj70yEq",
-        "name": "connect",
-        "api_key": "_xx5l4fzTPC-29ULd-hkUQ",
-        "encoded": "cV93V2NaRUJUbTZIU0JqNzB5RXE6X3h4NWw0ZnpUUEMtMjlVTGQtaGtVUQ==",
-        "beats_logstash_format": "q_wWcZEBTm6HSBj70yEq:_xx5l4fzTPC-29ULd-hkUQ"
-      }
-  }
-});
+const node = process.env.ELASTICSEARCH_URL;
+const apiKey = process.env.ELASTICSEARCH_API_KEY;
+if (!node || !apiKey) {
+  throw new Error('Configure ELASTICSEARCH_URL e ELASTICSEARCH_API_KEY no ambiente do servidor');
+}
+export const client = new Client({ node, auth: { apiKey } });

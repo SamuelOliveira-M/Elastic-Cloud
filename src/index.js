@@ -3,12 +3,14 @@ import { client } from './services/connectElastic.js';
 import apm from 'elastic-apm-node';
 import cors from 'cors';
 
-apm.start({
-    serviceName: 'my-service-name',
-    secretToken: '63shgTdgar7UpMBOVP',
-    serverUrl: 'https://37a2118835f74dfc918dc5c17c6379ee.apm.us-central1.gcp.cloud.es.io:443',
-    environment: 'my-environment'
-  })
+if (process.env.ELASTIC_APM_SERVER_URL && process.env.ELASTIC_APM_SECRET_TOKEN) {
+  apm.start({
+    serviceName: process.env.ELASTIC_APM_SERVICE_NAME || 'notes-search',
+    secretToken: process.env.ELASTIC_APM_SECRET_TOKEN,
+    serverUrl: process.env.ELASTIC_APM_SERVER_URL,
+    environment: process.env.NODE_ENV || 'development'
+  });
+}
 
 const app = express();
 app.use(cors());
@@ -66,13 +68,13 @@ app.get('/documents/:titulo?', async (req, res) => {
                         }
                     }
                 },
-                size: 1000 // Limite o número de documentos retornados (ajuste conforme necessário)
+                size: 1000 // Limite o nÃƒÂºmero de documentos retornados (ajuste conforme necessÃƒÂ¡rio)
             });
         
             if (result.hits.hits.length > 0) {
                 const documents = result.hits.hits.map(hit => ({
                     id: hit._id, // Inclui o ID do documento
-                    ...hit._source // Inclui o conteúdo do documento
+                    ...hit._source // Inclui o conteÃƒÂºdo do documento
                 }));
                 res.json(documents); // Retorna os documentos encontrados como JSON
             } else {
@@ -83,16 +85,16 @@ app.get('/documents/:titulo?', async (req, res) => {
                 index: 'my-index',
                 body: {
                     query: {
-                        match_all: {} // Busca todos os documentos no índice
+                        match_all: {} // Busca todos os documentos no ÃƒÂ­ndice
                     }
                 },
-                size: 1000 // Limite o número de documentos retornados (ajuste conforme necessário)
+                size: 1000 // Limite o nÃƒÂºmero de documentos retornados (ajuste conforme necessÃƒÂ¡rio)
             });
 
             if (result.hits.hits.length > 0) {
                 const documents = result.hits.hits.map(hit => ({
                     id: hit._id, // Inclui o ID do documento
-                    ...hit._source // Inclui o conteúdo do documento
+                    ...hit._source // Inclui o conteÃƒÂºdo do documento
                 }));
                 res.json(documents); // Retorna os documentos encontrados como JSON
             } else {
@@ -111,7 +113,7 @@ app.delete('/document/:id', async (req, res) => {
   
     try {
       const response = await client.delete({
-        index: 'my-index', // Certifique-se de substituir pelo nome correto do índice
+        index: 'my-index', // Certifique-se de substituir pelo nome correto do ÃƒÂ­ndice
         id: id,
       });
       
